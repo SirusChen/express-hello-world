@@ -5,10 +5,22 @@ const indexRouter = Router().get('/', (req, res) => {
   res.render('index', data);
 });
 
-const apiRouter = Router().get('/v1', (req, res) => {
+const apiRouter = Router({
+  mergeParams: true,
+}).get('/v1', (req, res) => {
   res.status(200).json({
     data: 'hello sirus api!',
   });
+}).get('/list', (req, res) => {
+  res.status(200).json({
+    data: '11111',
+  });
 });
 
-export default [indexRouter, apiRouter];
+export default [{
+  prefix: '/',
+  router: indexRouter
+}, {
+  prefix: '/v1',
+  router: apiRouter
+}];
