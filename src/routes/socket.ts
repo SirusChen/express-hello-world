@@ -53,7 +53,7 @@ export function useSocket(server: http.Server) {
       room.emit('startGame');
       const socketList = await room.fetchSockets();
       socketList.forEach((s) => {
-        s.emit('word', userName)
+        s.emit('word', Math.random())
         s.data.isVoted = false;
       });
       broadcastUserInfo(room);
