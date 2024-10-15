@@ -6,7 +6,7 @@
     for (let i = 0; i < model.prices.length; i ++) {
       const price = model.prices[i];
       const { value, maxValue } = game.resPool.resourceMap[price.name];
-      if (value / maxValue < CommonRatio - 0.02) {
+      if (value / maxValue < CommonRatio - 0.1) {
         return false;
       }
     }
@@ -64,33 +64,66 @@
         ],
       },
       {
-        key: 'culture',
+        key: 'oil',
         craft: [
           {
-            key: 'manuscript',
+            key: 'kerosene',
             amount: 1,
           },
         ],
       },
-      {
-        key: 'science',
-        craft: [
-          {
-            key: 'compedium',
-            amount: 1,
-          },
-          {
-            key: 'blueprint',
-            amount: 1,
-          },
-        ],
-      },
+      // {
+      //   key: 'culture',
+      //   craft: [
+      //     {
+      //       key: 'manuscript',
+      //       amount: 1,
+      //     },
+      //   ],
+      // },
+      // {
+      //   key: 'science',
+      //   craft: [
+      //     {
+      //       key: 'compedium',
+      //       amount: 1,
+      //     },
+      //     {
+      //       key: 'compedium',
+      //       amount: 1,
+      //     },
+      //   ],
+      // },
+      // {
+      //   key: 'titanium',
+      //   craft: [
+      //     {
+      //       key: 'alloy',
+      //       amount: 1,
+      //     },
+      //   ],
+      // },
     ];
     ratioList = [
       {
         src: 'furs',
         tar: 'parchment',
-        ratio: 150
+        ratio: 20
+      },
+      {
+        src: 'parchment',
+        tar: 'manuscript',
+        ratio: 10
+      },
+      {
+        src: 'manuscript',
+        tar: 'compedium',
+        ratio: 10
+      },
+      {
+        src: 'compedium',
+        tar: 'blueprint',
+        ratio: 10
       },
       {
         src: 'beam',
@@ -116,10 +149,11 @@
         handler({ trade }) {
           const game = window.game;
           const { value, maxValue } = game.resPool.resourceMap['gold'];
-          if (value / maxValue > CommonRatio) {
+          const { value: value2, maxValue: maxValue2 } = game.resPool.resourceMap['titanium'];
+          if (value / maxValue > CommonRatio && value2 / maxValue2 < CommonRatio) {
             let count = 0;
             // 多交易几次
-            while (count < 5) {
+            while (count < 4) {
               count++;
               trade(this.name);
               if (Math.random() > 0.8) {
@@ -155,10 +189,10 @@
         name: 'nagas',
         season: ['spring', 'summer'],
       },
-      {
-        name: 'spiders',
-        season: ['autumn'],
-      },
+      // {
+      //   name: 'spiders',
+      //   season: ['autumn'],
+      // },
       // {
       //   race: 'leviathans',
       // },
@@ -171,7 +205,12 @@
       workshop: {},
       unicornPasture: {},
       tradepost: {},
-      lumberMill: {
+      smelter: {},
+      lumberMill: {},
+      hut: {
+        handler: defaultBuildFun,
+      },
+      logHouse: {
         handler: defaultBuildFun,
       },
       mine: {
@@ -210,19 +249,19 @@
       // 自更新
       setTimeout(() => {
         this.updateSelf();
-      }, 10 * 60 * 1000);
+      }, 30 * 60 * 1000);
       this.iterate();
     }
     /** 程序主循环 */
     iterate() {
       this.observeStars();
       this.build();
+      this.buildEmbassy();
       this.craftItemByRatio();
       this.craftItemByAmount();
       this.praise();
       this.trade();
       this.hunt();
-      this.buildEmbassy();
       // @ts-ignore
       this.timer = setTimeout(this.iterate.bind(this), this.interval);
     }
@@ -230,7 +269,7 @@
     praise() {
       const game = window.game;
       const { value, maxValue } = game.resPool.resourceMap['faith'];
-      if (value / maxValue > 0.8) {
+      if (value / maxValue > CommonRatio) {
         game.religion.praise()
       }
     }
@@ -269,8 +308,8 @@
         // 判断特殊处理
         if (typeof item.handler === 'function') {
           const isTrade = item.handler({ season, trade });
-          if (!isTrade) {
-            break;
+          if (isTrade) {
+            continue;
           }
         }
         // 一般逻辑处理
